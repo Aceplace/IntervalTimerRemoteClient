@@ -6,8 +6,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     EditText ipEdit, portEdit;
     TextView periodTimeText;
+    Button connectBtn;
     Socket clientSocket;
     Lock clientCommunicationLock;
 
@@ -32,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
         ipEdit = findViewById(R.id.edit_ip);
         portEdit = findViewById(R.id.edit_port);
+        connectBtn = findViewById(R.id.btn_connect);
         periodTimeText = findViewById(R.id.text_period_time);
         clientSocket = null;
         clientCommunicationLock = new ReentrantLock();
@@ -46,8 +50,26 @@ public class MainActivity extends AppCompatActivity {
                 clientCommunicationLock.lock();
                 try {
                     clientSocket = new Socket(ipStr, port);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Connected!", Toast.LENGTH_SHORT).show();
+                            ipEdit.setEnabled(false);
+                            portEdit.setEnabled(false);
+                            connectBtn.setEnabled(false);
+
+                        }
+                    });
+
                 } catch (IOException e) {
                     e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Couldn\' Connect", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
                 } finally {
                     clientCommunicationLock.unlock();
                 }
@@ -87,7 +109,13 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    public void pauseMedia(View view) {
+    public void pauseMedia(View view) { new SendMessageThread("pause_media").start(); }
+
+    public void volDown(View view) { new SendMessageThread("media_vol_down").start(); }
+
+    public void volUp(View view) { new SendMessageThread("media_vol_up").start(); }
+
+    public void skipSong(View view) {
         new SendMessageThread("pause_media").start();
     }
 
