@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
     public void volUp(View view) { new SendMessageThread("media_vol_up").start(); }
 
     public void skipSong(View view) {
-        new SendMessageThread("pause_media").start();
+        new SendMessageThread("skip_song").start();
     }
 
     public void pauseTimer(View view) {
