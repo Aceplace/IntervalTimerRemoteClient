@@ -1,5 +1,6 @@
 package com.coachyeiter.intervaltimerremoteclient;
 
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     Button connectBtn;
     Socket clientSocket;
     Lock clientCommunicationLock;
+    SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,11 +41,23 @@ public class MainActivity extends AppCompatActivity {
         periodTimeText = findViewById(R.id.text_period_time);
         clientSocket = null;
         clientCommunicationLock = new ReentrantLock();
+
+        prefs = getApplicationContext().getSharedPreferences("prefs",MODE_PRIVATE);
+        String lastIP = prefs.getString("ip", "");
+        String lastPort = prefs.getString("port", "");
+        ipEdit.setText(lastIP);
+        portEdit.setText(lastPort);
     }
 
     public void connect(View view) {
         final String ipStr = ipEdit.getText().toString();
         final int port = Integer.parseInt(portEdit.getText().toString());
+
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+        prefsEditor.putString("ip", ipStr);
+        prefsEditor.putString("port", Integer.toString(port));
+        prefsEditor.commit();
+
         new Thread(new Runnable() {
             @Override
             public void run() {
