@@ -170,31 +170,36 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             clientCommunicationLock.lock();
-            if (clientSocket != null && clientSocket.isConnected()){
-                try {
-                    PrintStream ps = new PrintStream(clientSocket.getOutputStream());
-                    BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                    ps.print(message);
-                    ps.flush();
+			try
+			{
+				if (clientSocket != null && clientSocket.isConnected()){
+					PrintStream ps = new PrintStream(clientSocket.getOutputStream());
+					BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+					ps.print(message);
+					ps.flush();
 
-                    String response = br.readLine();
-                    Log.i("Response From Timer", response);
+					String response = br.readLine();
+					Log.i("Response From Timer", response);
 
-                    ps.print("period_time");
-                    ps.flush();
-                    final String timeResponse = br.readLine();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            periodTimeText.setText(timeResponse);
-                        }
-                    });
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            clientCommunicationLock.unlock();
+					ps.print("period_time");
+					ps.flush();
+					final String timeResponse = br.readLine();
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							periodTimeText.setText(timeResponse);
+						}
+					});				 
+				}
+			}
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
+			finally
+			{
+				clientCommunicationLock.unlock();
+			}
         }
     }
 }
