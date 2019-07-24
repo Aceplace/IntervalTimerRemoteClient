@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
                         }
                     });
-
+                    startUpdateTimer();
                 } catch (IOException e) {
                     e.printStackTrace();
                     runOnUiThread(new Runnable() {
@@ -87,9 +87,21 @@ public class MainActivity extends AppCompatActivity {
                 } finally {
                     clientCommunicationLock.unlock();
                 }
-                startUpdateTimer();
+
             }
         }).start();
+    }
+
+    public void unlockConnectFields(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), "Disonnected!", Toast.LENGTH_SHORT).show();
+                ipEdit.setEnabled(true);
+                portEdit.setEnabled(true);
+                connectBtn.setEnabled(true);
+            }
+        });
     }
 
     public void startUpdateTimer(){
@@ -101,24 +113,30 @@ public class MainActivity extends AppCompatActivity {
                     clientCommunicationLock.lock();
                     PrintStream ps = new PrintStream(clientSocket.getOutputStream());
                     BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                    ps.print("period_time");
+                    Log.i("Network", "Sending Message: " + "period_time\n");
+                    ps.print("period_time\n");
                     ps.flush();
 
                     final String response = br.readLine();
+                    Log.i("Network", "Response From Timer: " + response);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             periodTimeText.setText(response);
                         }
                     });
+
+                    startUpdateTimer(); //Call again to repeat task
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                    unlockConnectFields();
                 } catch (IOException e) {
                     e.printStackTrace();
+                    unlockConnectFields();
                 } finally {
                     clientCommunicationLock.unlock();
                 }
-                startUpdateTimer(); //Call again to repeat task
+
             }
         }).start();
     }
@@ -165,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
         String message;
 
         public SendMessageThread(String message){
-            this.message = message;
+            this.message = message + "\n";
         }
         @Override
         public void run() {
@@ -175,15 +193,18 @@ public class MainActivity extends AppCompatActivity {
 				if (clientSocket != null && clientSocket.isConnected()){
 					PrintStream ps = new PrintStream(clientSocket.getOutputStream());
 					BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                    Log.i("Network", "Sending Message: " + message);
 					ps.print(message);
 					ps.flush();
 
 					String response = br.readLine();
-					Log.i("Response From Timer", response);
+					Log.i("Network", "Response From Timer: " + response);
 
-					ps.print("period_time");
+                    Log.i("Network", "Sending Message: " + "period_time\n");
+					ps.print("period_time\n");
 					ps.flush();
 					final String timeResponse = br.readLine();
+                    Log.i("Network", "Response From Timer: " + timeResponse);
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
@@ -195,6 +216,7 @@ public class MainActivity extends AppCompatActivity {
 			catch (IOException e) 
 			{
 				e.printStackTrace();
+				unlockConnectFields();
 			}
 			finally
 			{
